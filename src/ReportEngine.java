@@ -11,11 +11,12 @@ public class ReportEngine {
     private static final String READ_YEAR_DATA = "Пожалуйста выполните считывание итоговых данных по годам.";
     private static final String READ_MONTH_DATA = "Пожалуйста выполните считывание итоговых данных по месяцам.";
 
-    static FileReader fileReader = new FileReader();
+    private final FileReader fileReader;
 
     public ReportEngine() {
         this.monthlyReportHashMap = new HashMap<>();
         this.yearlyReportHashMap = new HashMap<>();
+        this.fileReader = new FileReader();
     }
 
     public void readMonthsData() {
@@ -67,24 +68,26 @@ public class ReportEngine {
             System.out.println(READ_YEAR_DATA);
         } else {
             Set monthCount = new HashSet();
+            Map<Integer, Double> income = new HashMap<>();
+            Map<Integer, Double> consumption = new HashMap<>();
             for (YearlyReport yearlyReport : yearlyReportHashMap.values()) {
                 System.out.println("Рассматриваемый год: " + yearlyReport.getYear());
-                double income = 0;
-                double consumption = 0;
                 for (YearData yearData : yearlyReport.getYearData()) {
                     monthCount.add(yearData.getMonth());
                     if (!yearData.getExpense()) {
-                        System.out.println("Месяц: " + yearData.getMonth());
-                        System.out.println("Прибыль: " + yearData.getAmount());
-                        income += yearData.getAmount();
+                        income.put(yearData.getMonth(), yearData.getAmount());
                     } else {
                         if (yearData.getExpense()) {
-                            consumption += yearData.getAmount();
+                            consumption.put(yearData.getMonth(), yearData.getAmount());
                         }
                     }
                 }
-                System.out.println("Cредний расход за все имеющиеся операции в году: " + consumption / monthCount.size());
-                System.out.println("Cредний доход за все имеющиеся операции в году: " + income / monthCount.size());
+                for (int i = 1; i <= income.size(); i++) {
+                    System.out.println("Месяц: " + i);
+                    System.out.println("Прибыль: " + (income.get(i) - consumption.get(i)));
+                }
+                System.out.println("Cредний расход за все имеющиеся операции в году: " + (consumption.values().stream().mapToDouble(Double::doubleValue).sum()) / monthCount.size());
+                System.out.println("Cредний доход за все имеющиеся операции в году: " + (income.values().stream().mapToDouble(Double::doubleValue).sum()) / monthCount.size());
             }
         }
     }
